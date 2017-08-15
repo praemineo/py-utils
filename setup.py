@@ -9,5 +9,6 @@ setup(
   url = 'https://github.com/preeminence/py-utils', # use the URL to the github repo
   download_url = 'https://github.com/preeminence/py-utils/archive/0.1.tar.gz', # I'll explain this in a second
   keywords = ['mongo', 'preeminence', 'utility'], # arbitrary keywords
-  classifiers = [],
+  install_requires=['pymongo',],
+  classifiers = []
 )
