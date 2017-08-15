@@ -2,7 +2,6 @@
 Centralised utility class for all operations to be performed on a mongo database.
 """
 from pymongo import MongoClient
-print "ready"
 
 class MongoUtils:
   def __init__(self,address="127.0.0.1", port=27017, db_name="", collection_name=""):
