@@ -1,5 +1,5 @@
 
-from setuptools import setup
+from setuptools import setup,find_packages
 
 setup(name='preeminence_utils',
       version='0.1',
@@ -8,7 +8,7 @@ setup(name='preeminence_utils',
       author='Tushar Pawar',
       author_email='tusharvijaypawar@gmail.com',
       license='MIT',
-      packages=['preeminence_utils'],
+      packages=find_packages(),
       install_requires=[
           'pymongo',
       ],
