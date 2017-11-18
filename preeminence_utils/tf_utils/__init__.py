@@ -51,6 +51,8 @@ class Model():
         return latest_checkpoint_index
 
     def restore_weights(self,checkpoint_path="./model_weights/"):
+        if not os.path.exists(checkpoint_path):
+            raise OSError("Checkpoint directory not found")
         latest_checkpoint = self.get_latest_checkpoint(checkpoint_path)
         saver = tf.train.Saver()
         saver.restore(self.sess,checkpoint_path+"model_weights_{}.ckpt".format(latest_checkpoint))
