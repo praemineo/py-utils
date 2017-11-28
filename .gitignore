@@ -2,3 +2,5 @@
 .ipynb_checkpoints
 try.ipynb
 *.pyc
+logs
+model_weights

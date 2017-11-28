@@ -10,6 +10,6 @@ setup(name='preeminence_utils',
       license='MIT',
       packages=find_packages(),
       install_requires=[
-          'pymongo','tensorflow-gpu'
+          'pymongo','tensorflow-gpu,numpy'
       ],
       zip_safe=False)
