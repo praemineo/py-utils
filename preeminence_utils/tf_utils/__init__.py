@@ -104,14 +104,7 @@ class Model:
         :param checkpoint_path: Custom directory where checkpoints are saved
         :return:
         """
-        checkpoints = os.listdir(checkpoint_path)
-        latest_checkpoint_index = -1
-        for checkpoint in checkpoints:
-            if "meta" in checkpoint:
-                checkpoint_index = int(re.findall("\d+", checkpoint)[0])
-                if checkpoint_index > latest_checkpoint_index:
-                    latest_checkpoint_index = checkpoint_index
-        return latest_checkpoint_index
+        return tf.train.latest_checkpoint(checkpoint_path)
 
     def restore_weights(self, checkpoint_path="./model_weights/"):
         """
@@ -124,8 +117,11 @@ class Model:
         if not os.path.exists(checkpoint_path):
             raise OSError("Checkpoint directory not found")
         latest_checkpoint = self.get_latest_checkpoint(checkpoint_path)
-        saver = tf.train.Saver()
-        saver.restore(self.sess, checkpoint_path + "model_weights_{}.ckpt".format(latest_checkpoint))
+        if latest_checkpoint:
+            saver = tf.train.Saver()
+            saver.restore(self.sess, latest_checkpoint)
+        else:
+            raise OSError("Checkpoint file not found at "+checkpoint_path)
 
     def next_batch(self, data, batch_start, batch_size):
         """
@@ -157,8 +153,13 @@ class Model:
             os.makedirs(checkpoint_path)
 
         if checkpoint_number is None:
-            checkpoint_number = self.get_latest_checkpoint(checkpoint_path) + 1
+            latest_checkpoint = self.get_latest_checkpoint()
+            print latest_checkpoint
+            if latest_checkpoint:
+                checkpoint_number = int(latest_checkpoint.split("-")[-1])+1
+            else:
+                checkpoint_number=1
 
         saver = tf.train.Saver()
-        save_path = saver.save(self.sess, checkpoint_path + "model_weights_{}.ckpt".format(checkpoint_number))
+        save_path = saver.save(self.sess, checkpoint_path + "model_weights.ckpt",global_step=checkpoint_number)
         print "Model saved at", save_path
