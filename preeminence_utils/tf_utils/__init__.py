@@ -16,6 +16,7 @@ class Model:
         self.graph = None
         self.sess = None
         self.writer = None
+        self.saver = None
 
     def init(self):
         """
@@ -194,9 +195,11 @@ class Model:
             else:
                 checkpoint_number=1
 
-        saver = tf.train.Saver()
+        if self.saver is None:
+            self.saver = tf.train.Saver()
+
         weight_file_prefix = "model_weights.ckpt"
-        save_path = saver.save(self.sess, checkpoint_path + weight_file_prefix,global_step=checkpoint_number)
+        save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix,global_step=checkpoint_number)
         print "Model saved at", save_path
         if s3:
             start_time = time.time()
