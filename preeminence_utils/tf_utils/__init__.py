@@ -188,7 +188,7 @@ class Model:
             os.makedirs(checkpoint_path)
 
         if checkpoint_number is None:
-            latest_checkpoint = self.get_latest_checkpoint()
+            latest_checkpoint = self.get_latest_checkpoint(checkpoint_path=checkpoint_path)
             # print latest_checkpoint
             if latest_checkpoint:
                 checkpoint_number = int(latest_checkpoint.split("-")[-1])+1
