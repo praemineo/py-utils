@@ -10,8 +10,9 @@ Welcome to Preeminence Utils Documentation
    :maxdepth: 2
    :caption: Contents:
 
-   tensorflow_utils
    mongo_utils
+   tensorflow_utils
+   
 
 
 
