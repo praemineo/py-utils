@@ -47,6 +47,172 @@
 <span class="n">model</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span>
 </pre></div>
 </div>
+<span class="target" id="module-tf_utils"></span><p>Helper functions for using while making a neural network using tensorflow</p>
+<dl class="class">
+<dt id="tf_utils.Model">
+<em class="property">class </em><code class="descclassname">tf_utils.</code><code class="descname">Model</code><a class="headerlink" href="#tf_utils.Model" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="tf_utils.Model.get_latest_checkpoint">
+<code class="descname">get_latest_checkpoint</code><span class="sig-paren">(</span><em>checkpoint_path='./model_weights/'</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.get_latest_checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the latest checkpoint in the checkpoints
+directory in order to load the latest weights to continue
+training for that point.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>checkpoint_path</strong> – Custom directory where checkpoints are saved</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.graph_info">
+<code class="descname">graph_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.graph_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get ops in the graph</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Graph ops</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.init">
+<code class="descname">init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise a new model and return its graph.
+This function will spawn a new graph and return it.
+You’ll have to set it to default graph in order to
+add ops to it.
+Sample:
+model = tf_utils.Model()
+model_graph = model.init().as_default()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Returns a new graph.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.next_batch">
+<code class="descname">next_batch</code><span class="sig-paren">(</span><em>data</em>, <em>batch_start</em>, <em>batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.next_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get next batch from the training data
+This should be a generator function :/</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> – Training data</li>
+<li><strong>batch_start</strong> – batch start index</li>
+<li><strong>batch_size</strong> – size of the batch</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.restore_weights">
+<code class="descname">restore_weights</code><span class="sig-paren">(</span><em>checkpoint_path='./model_weights/'</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.restore_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore weights from the checkpoint path to the latest
+checkpoint to resume training from that point.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>checkpoint_path</strong> – Custom directory where checkpoints are saved</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.save_weights">
+<code class="descname">save_weights</code><span class="sig-paren">(</span><em>checkpoint_path=None</em>, <em>checkpoint_number=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.save_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current weights of the model to disk at the checkpoint
+path.
+:param checkpoint_path: Custom directory where checkpoints are saved
+:param checkpoint_number: Custom number to append at the end of checkpoint
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.session">
+<code class="descname">session</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and return a new session for training.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">New session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.train">
+<code class="descname">train</code><span class="sig-paren">(</span><em>ops</em>, <em>x</em>, <em>y</em>, <em>x_data</em>, <em>y_data</em>, <em>num_epochs=1</em>, <em>batch_size=1</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Training function. Executes the graph on a given dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ops</strong> – Graph ops to be calculated and returned. Must be [optimiser_op,loss_op]</li>
+<li><strong>x</strong> – placeholder tensor for x</li>
+<li><strong>y</strong> – placeholder tensor for y</li>
+<li><strong>x_data</strong> – Training data to be fed into x</li>
+<li><strong>y_data</strong> – Training data to be fed into y</li>
+<li><strong>num_epochs</strong> – Number of epochs to be executed</li>
+<li><strong>batch_size</strong> – Size of a batch to be fed at a time</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Nothing</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tf_utils.Model.visualise">
+<code class="descname">visualise</code><span class="sig-paren">(</span><em>logdir='./logs'</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.visualise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save graph summary in the logidr to be
+visualised by tensorboard.
+Summaries for individual ops to be added.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>logdir</strong> – Destination for storing graph logs. ./logs by default</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Nothing</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

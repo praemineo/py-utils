@@ -7,3 +7,8 @@ This is tensorflow utils
 
     from preeminence_utils import tf_utils
     model = tf_utils.Model()
+
+.. automodule:: tf_utils
+ 
+.. autoclass:: Model
+    :members:
