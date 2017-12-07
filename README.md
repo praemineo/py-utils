@@ -1,4 +1,4 @@
-# Py Utils
+# Py Utils [![Documentation Status](https://readthedocs.org/projects/preeminence-utils/badge/?version=latest)](http://preeminence-utils.readthedocs.io/en/latest/?badge=latest)
 Python utility functions for internal usage.
 
 ## Installation
