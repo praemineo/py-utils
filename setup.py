@@ -11,6 +11,6 @@ setup(name='preeminence_utils',
       packages=find_packages(),
       install_requires=[
 
-          'pymongo','tensorflow','numpy','awscli','boto3'
+          'pymongo','numpy','awscli','boto3'
       ],
       zip_safe=False)
