@@ -108,7 +108,7 @@ class Model:
         """
         return tf.train.latest_checkpoint(checkpoint_path)
 
-    def restore_weights(self, checkpoint_path="./model_weights/", s3=False, s3_path = None):
+    def restore_weights(self, checkpoint_path="./model_weights/", s3=False, s3_path=None):
         """
         Restore weights from the checkpoint path to the latest
         checkpoint to resume training from that point.
@@ -123,26 +123,25 @@ class Model:
             if s3_path is None:
                 raise OSError("s3_path argument not provided.")
             bucket_name = "preeminence-models"  # replace with your bucket name
-            checkpoint_key = s3_path+'/checkpoint'  # replace with your object key
+            checkpoint_key = s3_path + '/checkpoint'  # replace with your object key
 
             s3_obj = boto3.client('s3')
 
             try:
-                s3_obj.download_file(bucket_name,checkpoint_key, "{}/{}".format(checkpoint_path,'checkpoint'))
-                checkpoint_file = open(checkpoint_path+'checkpoint').read().split()[1].strip('"')
+                s3_obj.download_file(bucket_name, checkpoint_key, "{}/{}".format(checkpoint_path, 'checkpoint'))
+                checkpoint_file = open(checkpoint_path + 'checkpoint').read().split()[1].strip('"')
                 for weights_file in s3_obj.list_objects(Bucket=bucket_name)["Contents"]:
-                    if s3_path+"/"+checkpoint_file in  weights_file["Key"]:
+                    if s3_path + "/" + checkpoint_file in weights_file["Key"]:
                         weights_file_key = weights_file["Key"]
-                        weights_file_filename = weights_file["Key"].replace(s3_path+"/","",1)
-                        s3_obj.download_file(bucket_name, weights_file_key, "{}/{}".format(checkpoint_path, weights_file_filename))
+                        weights_file_filename = weights_file["Key"].replace(s3_path + "/", "", 1)
+                        s3_obj.download_file(bucket_name, weights_file_key,
+                                             "{}/{}".format(checkpoint_path, weights_file_filename))
 
                 print "Downloaded latest checkpoint {} from S3 and restored to model".format(checkpoint_file)
 
-
             except Exception as e:
                 print e
-                raise OSError("File with key: {} not found in bucket: {}".format(checkpoint_key,bucket_name))
-
+                raise OSError("File with key: {} not found in bucket: {}".format(checkpoint_key, bucket_name))
 
         if not os.path.exists(checkpoint_path):
             raise OSError("Checkpoint directory not found")
@@ -152,7 +151,7 @@ class Model:
             saver = tf.train.Saver()
             saver.restore(self.sess, latest_checkpoint)
         else:
-            raise OSError("Checkpoint file not found at "+checkpoint_path)
+            raise OSError("Checkpoint file not found at " + checkpoint_path)
 
     def next_batch(self, data, batch_start, batch_size):
         """
@@ -168,17 +167,17 @@ class Model:
         batch_end = min(batch_start + batch_size, len_data)
         return data[batch_start:batch_end]
 
-    def save_weights(self, checkpoint_path=None, checkpoint_number=None, s3=False, s3_path = None):
+    def save_weights(self, checkpoint_path=None, checkpoint_number=None, s3=False, s3_path=None):
         """
         Save the current weights of the model to disk at the checkpoint
         path.
+        
         :param s3: Flag to decide to upload weights to S3 or not
         :param s3_path: Subfolder in S3 bucket
         :param checkpoint_path: Custom directory where checkpoints are saved
         :param checkpoint_number: Custom number to append at the end of checkpoint
         :return:
         """
-
 
         if checkpoint_path is None:
             print "Checkpoint path not provided. Saving to ./model_weights/"
@@ -191,15 +190,15 @@ class Model:
             latest_checkpoint = self.get_latest_checkpoint(checkpoint_path=checkpoint_path)
             # print latest_checkpoint
             if latest_checkpoint:
-                checkpoint_number = int(latest_checkpoint.split("-")[-1])+1
+                checkpoint_number = int(latest_checkpoint.split("-")[-1]) + 1
             else:
-                checkpoint_number=1
+                checkpoint_number = 1
 
         if self.saver is None:
             self.saver = tf.train.Saver()
 
         weight_file_prefix = "model_weights.ckpt"
-        save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix,global_step=checkpoint_number)
+        save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix, global_step=checkpoint_number)
         print "Model saved at", save_path
         if s3:
             start_time = time.time()
@@ -214,13 +213,16 @@ class Model:
                 buckets = [bucket['Name'] for bucket in response['Buckets']]
 
                 if bucket_name in buckets:
-                    filename_prefix = weight_file_prefix+"-"+str(checkpoint_number)
+                    filename_prefix = weight_file_prefix + "-" + str(checkpoint_number)
                     weight_files = [filename for filename in os.listdir(checkpoint_path) if filename_prefix in filename]
-                    s3_obj.upload_file(checkpoint_path + "checkpoint", bucket_name, "{}/{}".format(s3_path, "checkpoint"))
+                    s3_obj.upload_file(checkpoint_path + "checkpoint", bucket_name,
+                                       "{}/{}".format(s3_path, "checkpoint"))
                     for weight_file in weight_files:
                         # print "Uploading",weight_file
-                        s3_obj.upload_file(checkpoint_path+weight_file,bucket_name,"{}/{}".format(s3_path,weight_file))
-                    print "Model uploaded to S3 at {}/{}/ in {} seconds".format(bucket_name,s3_path,time.time()-start_time)
+                        s3_obj.upload_file(checkpoint_path + weight_file, bucket_name,
+                                           "{}/{}".format(s3_path, weight_file))
+                    print "Model uploaded to S3 at {}/{}/ in {} seconds".format(bucket_name, s3_path,
+                                                                                time.time() - start_time)
                 else:
                     raise OSError(
                         "Bucket not found. Check if bucket with name {} is present in your AWS account or change the bucket name.".format(
