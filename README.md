@@ -9,7 +9,7 @@ Use pip to install directly from this repo(Stable).
 
 Use dev version for new features(Unstable)
 
-``pip install --user https://github.com/preeminence/py-utils/archive/dev.zip``
+``pip install --user --upgrade https://github.com/preeminence/py-utils/archive/dev.zip``
 
 ### Included Packages
 
