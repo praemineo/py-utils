@@ -127,16 +127,22 @@ This should be a generator function :/</p>
 
 <dl class="method">
 <dt id="tf_utils.Model.restore_weights">
-<code class="descname">restore_weights</code><span class="sig-paren">(</span><em>checkpoint_path='./model_weights/'</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.restore_weights" title="Permalink to this definition">¶</a></dt>
+<code class="descname">restore_weights</code><span class="sig-paren">(</span><em>checkpoint_path='./model_weights/'</em>, <em>s3=False</em>, <em>s3_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.restore_weights" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restore weights from the checkpoint path to the latest
 checkpoint to resume training from that point.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>checkpoint_path</strong> – Custom directory where checkpoints are saved</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>s3</strong> – Flag to decide to download checkpoints from S3 or not</li>
+<li><strong>s3_path</strong> – Name of subfolder in preeminence-models bucket</li>
+<li><strong>checkpoint_path</strong> – Custom directory where checkpoints are saved</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -144,12 +150,26 @@ checkpoint to resume training from that point.</p>
 
 <dl class="method">
 <dt id="tf_utils.Model.save_weights">
-<code class="descname">save_weights</code><span class="sig-paren">(</span><em>checkpoint_path=None</em>, <em>checkpoint_number=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.save_weights" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save_weights</code><span class="sig-paren">(</span><em>checkpoint_path=None</em>, <em>checkpoint_number=None</em>, <em>s3=False</em>, <em>s3_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tf_utils.Model.save_weights" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the current weights of the model to disk at the checkpoint
-path.
-:param checkpoint_path: Custom directory where checkpoints are saved
-:param checkpoint_number: Custom number to append at the end of checkpoint
-:return:</p>
+path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>s3</strong> – Flag to decide to upload weights to S3 or not</li>
+<li><strong>s3_path</strong> – Subfolder in S3 bucket</li>
+<li><strong>checkpoint_path</strong> – Custom directory where checkpoints are saved</li>
+<li><strong>checkpoint_number</strong> – Custom number to append at the end of checkpoint</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
