@@ -62,7 +62,26 @@ class Model:
         self.sess = tf.Session()
         return self.sess
 
-    def train(self, ops, x, y, x_data, y_data, num_epochs=1, batch_size=1):
+    def sparse_tuples_from_sequences(self,sequences, dtype=np.int32):
+        """
+        Create a sparse representations of inputs.
+        :param sequences: a list of lists of type dtype where each element is a sequence
+        :return: A tuple with (indices, values, shape)
+        """
+        indexes = []
+        values = []
+
+        for n, sequence in enumerate(sequences):
+            indexes.extend(zip([n] * len(sequence), range(len(sequence))))
+            values.extend(sequence)
+
+        indexes = np.asarray(indexes, dtype=np.int64)
+        values = np.asarray(values, dtype=dtype)
+        shape = np.asarray([len(sequences), np.asarray(indexes).max(0)[1] + 1], dtype=np.int64)
+
+        return indexes, values, shape
+
+    def train(self, ops, x, y, y_len, x_data, y_data, y_len_data, num_epochs=1, batch_size=1):
         """
         Training function. Executes the graph on a given dataset.
 
@@ -77,14 +96,16 @@ class Model:
         """
 
         len_data = len(x_data)
-
+        # print y_len_data.dtype
         with self.graph.as_default():
             for epoch in range(1, num_epochs + 1):
                 epoch_start_time = time.time()
                 for batch_start in range(0, len_data, batch_size):
                     optimiser_value, loss_value = self.sess.run(ops, feed_dict={
                         x: self.next_batch(x_data, batch_start, batch_size),
-                        y: self.next_batch(y_data, batch_start, batch_size)})
+                        y: self.sparse_tuples_from_sequences(self.next_batch(y_data, batch_start, batch_size)),
+                        y_len: self.next_batch(y_len_data, batch_start, batch_size)
+                    })
                     sys.stdout.write(
                         "\rEpoch: {}/{}, Batch: {}/{}, Training loss: {}".format(
                             epoch,
