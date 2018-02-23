@@ -142,7 +142,7 @@ class Model:
         if s3:
             if s3_path is None:
                 raise OSError("s3_path argument not provided.")
-            bucket_name = "preeminence-models"  # replace with your bucket name
+            bucket_name = "preeminence-ml-models"  # replace with your bucket name
             checkpoint_key = s3_path + '/checkpoint'  # replace with your object key
 
             s3_obj = boto3.client('s3')
@@ -227,7 +227,7 @@ class Model:
             else:
                 s3_obj = boto3.client('s3')
                 response = s3_obj.list_buckets()
-                bucket_name = "preeminence-models"
+                bucket_name = "preeminence-ml-models"
 
                 # Get a list of all bucket names from the response
                 buckets = [bucket['Name'] for bucket in response['Buckets']]
