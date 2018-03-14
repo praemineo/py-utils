@@ -6,6 +6,7 @@ import tensorflow as tf
 import sys
 import numpy as np
 import time
+import datetime
 import os
 import boto3
 import inspect
@@ -217,7 +218,9 @@ class Model:
         if self.saver is None:
             self.saver = tf.train.Saver()
 
-        weight_file_prefix = "model_weights.ckpt"
+        time_difference = datetime.timedelta(hours=5,minutes=30)
+        time_now = (datetime.datetime.now()+time_difference).strftime ("%Y-%m-%d-%H-%M")
+        weight_file_prefix = "{}-model_weights.ckpt".format(time_now)
         save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix, global_step=checkpoint_number)
         print "Model saved at", save_path
         if s3:
