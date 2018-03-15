@@ -188,7 +188,7 @@ class Model:
         batch_end = min(batch_start + batch_size, len_data)
         return data[batch_start:batch_end]
 
-    def save_weights(self, checkpoint_path=None, checkpoint_number=None, s3=False, s3_path=None):
+    def save_weights(self, checkpoint_path=None, checkpoint_number=None, s3=False, s3_path=None, run_id_prefix = ""):
         """
         Save the current weights of the model to disk at the checkpoint
         path.
@@ -220,7 +220,10 @@ class Model:
 
         time_difference = datetime.timedelta(hours=5,minutes=30)
         time_now = (datetime.datetime.now()+time_difference).strftime ("%Y-%m-%d-%H-%M")
-        weight_file_prefix = "{}-model_weights.ckpt".format(time_now)
+        if run_id_prefix != "":
+            weight_file_prefix = "{}-{}-model_weights.ckpt".format(run_id_prefix,time_now)
+        else:
+            weight_file_prefix = "{}-model_weights.ckpt".format(time_now)
         save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix, global_step=checkpoint_number)
         print "Model saved at", save_path
         if s3:
