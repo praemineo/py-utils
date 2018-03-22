@@ -82,7 +82,7 @@ class Model:
 
         return indexes, values, shape
 
-    def train(self, ops, x, y, x_data, y_data, num_epochs=1, batch_size=1):
+    def train(self, ops, x, y, x_data, y_data, num_epochs=1, batch_size=1, y_as_sparse_tuples=False):
         """
         Training function. Executes the graph on a given dataset.
 
@@ -102,10 +102,19 @@ class Model:
             for epoch in range(1, num_epochs + 1):
                 epoch_start_time = time.time()
                 for batch_start in range(0, len_data, batch_size):
-                    optimiser_value, loss_value = self.sess.run(ops, feed_dict={
-                        x: self.next_batch(x_data, batch_start, batch_size),
-                        y: self.sparse_tuples_from_sequences(self.next_batch(y_data, batch_start, batch_size))
-                    })
+                    if y_as_sparse_tuples:
+                        feed = {
+                            x: self.next_batch(x_data, batch_start, batch_size),
+                            y: self.sparse_tuples_from_sequences(self.next_batch(y_data, batch_start, batch_size))
+                        }
+                    else:
+                        feed = {
+                            x: self.next_batch(x_data, batch_start, batch_size),
+                            y: self.next_batch(y_data, batch_start, batch_size)
+                        }
+
+                    optimiser_value, loss_value = self.sess.run(ops, feed_dict=feed)
+
                     sys.stdout.write(
                         "\rEpoch: {}/{}, Batch: {}/{}, Training loss: {}".format(
                             epoch,
