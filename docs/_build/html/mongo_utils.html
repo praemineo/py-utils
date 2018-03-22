@@ -1,0 +1,150 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Mongo Utils &#8212; preeminence_utils 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tensorflow Utils" href="tensorflow_utils.html" />
+    <link rel="prev" title="Welcome to Preeminence Utils Documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mongo-utils">
+<h1>Mongo Utils<a class="headerlink" href="#mongo-utils" title="Permalink to this headline">¶</a></h1>
+<p>This is mongo utils</p>
+<span class="target" id="module-mongo_utils"></span><p>Centralised utility class for all operations to be performed on a mongo database.</p>
+<dl class="class">
+<dt id="mongo_utils.MongoUtils">
+<em class="property">class </em><code class="descclassname">mongo_utils.</code><code class="descname">MongoUtils</code><span class="sig-paren">(</span><em>address='127.0.0.1'</em>, <em>port=27017</em>, <em>db_name=''</em>, <em>collection_name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#mongo_utils.MongoUtils" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="mongo_utils.MongoUtils.get_list_from_db">
+<code class="descname">get_list_from_db</code><span class="sig-paren">(</span><em>filter_condition=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mongo_utils.MongoUtils.get_list_from_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to mongo db and fetch data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filter_condition</strong> – Filter condition</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Return collection as a list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mongo_utils.MongoUtils.insert_record">
+<code class="descname">insert_record</code><span class="sig-paren">(</span><em>new_record=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mongo_utils.MongoUtils.insert_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a record in table
+:param new_record: New record to be inserted.
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mongo_utils.MongoUtils.update_record">
+<code class="descname">update_record</code><span class="sig-paren">(</span><em>filter_condition=None</em>, <em>new_value=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mongo_utils.MongoUtils.update_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to mongo db and update data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filter_condition</strong> – Filter condition</li>
+<li><strong>new_value</strong> – new value of the selected document</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Return collection as a list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Preeminence Utils Documentation</a></li>
+      <li>Next: <a href="tensorflow_utils.html" title="next chapter">Tensorflow Utils</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Mongo Utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorflow_utils.html">Tensorflow Utils</a></li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Tushar Pawar.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/mongo_utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

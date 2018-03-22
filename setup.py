@@ -10,6 +10,9 @@ setup(name='preeminence_utils',
       license='MIT',
       packages=find_packages(),
       install_requires=[
-          'pymongo'
+
+
+          'pymongo','numpy','awscli','boto3'
+
       ],
       zip_safe=False)
