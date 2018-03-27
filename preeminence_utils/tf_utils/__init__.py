@@ -93,6 +93,7 @@ class Model:
         :param y_data: Training data to be fed into y
         :param num_epochs: Number of epochs to be executed
         :param batch_size: Size of a batch to be fed at a time
+        :param y_as_sparse_tuples: Flag to decide to convert y to sparse tuples or not
         :return: Nothing
         """
 
