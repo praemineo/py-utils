@@ -6,7 +6,7 @@ import tensorflow as tf
 import sys
 import numpy as np
 import time
-import datetime
+import aws_utils
 import os
 import boto3
 import checkpoint
@@ -131,56 +131,86 @@ class Model:
     def get_latest_checkpoint(self, checkpoint_path="./model_weights/"):
         """
         Get the name of the latest checkpoint in the checkpoints
-        directory in order to load the latest weights to continue
-        training for that point.
+        directory and check if there exists the tar file with that
+        checkpoint name in order to load the latest weights to continue
+        training from that point.
 
         :param checkpoint_path: Custom directory where checkpoints are saved
         :return:
         """
-        return tf.train.latest_checkpoint(checkpoint_path)
 
-    def restore_weights(self, checkpoint_path="./model_weights/", s3=False, s3_path=None):
+        checkpoint_filename = os.path.join(checkpoint_path, "checkpoint")
+
+        if os.path.exists(checkpoint_filename):
+            with open(checkpoint_filename) as ckpt_file:
+                checkpoints = ckpt_file.read()
+            checkpoints=checkpoints.split("\n")
+            latest_checkpoint = checkpoints[0]
+            latest_checkpoint = latest_checkpoint.split(":")[1]
+            latest_checkpoint = latest_checkpoint.strip()
+            latest_checkpoint = latest_checkpoint.replace('"', '')
+            if os.path.exists(os.path.join(checkpoint_path,latest_checkpoint+".tar")):
+                return latest_checkpoint
+            else:
+                print "tar file for latest checkpoint {} not found in {}".format(latest_checkpoint,checkpoint_path)
+                return latest_checkpoint
+        else:
+            print "checkpoint file that contains name of latest checkpoint not found"
+            return None
+
+    def restore_weights(self, checkpoint_path="./model_weights/", download_from_s3=False, s3_path=None,
+                        s3_bucket_name="preeminence-ml-models"):
         """
         Restore weights from the checkpoint path to the latest
         checkpoint to resume training from that point.
 
-        :param s3: Flag to decide to download checkpoints from S3 or not
+        :param download_from_s3: Flag to decide to download checkpoints from S3 or not
         :param s3_path: Name of subfolder in preeminence-models bucket
         :param checkpoint_path: Custom directory where checkpoints are saved
         :return:
         """
 
-        if s3:
+        if download_from_s3:
             if s3_path is None:
                 raise OSError("s3_path argument not provided.")
-            bucket_name = "preeminence-ml-models"  # replace with your bucket name
-            checkpoint_key = s3_path + '/checkpoint'  # replace with your object key
+            checkpoint_key = os.path.join(s3_path,'checkpoint')
 
-            s3_obj = boto3.client('s3')
+            s3_handler = aws_utils.S3_handler(bucket_name=s3_bucket_name)
+            s3_handler.download_file(checkpoint_key,os.path.join(checkpoint_path,"checkpoint"))
 
-            try:
-                s3_obj.download_file(bucket_name, checkpoint_key, "{}/{}".format(checkpoint_path, 'checkpoint'))
-                checkpoint_file = open(checkpoint_path + 'checkpoint').read().split()[1].strip('"')
-                for weights_file in s3_obj.list_objects(Bucket=bucket_name)["Contents"]:
-                    if s3_path + "/" + checkpoint_file in weights_file["Key"]:
-                        weights_file_key = weights_file["Key"]
-                        weights_file_filename = weights_file["Key"].replace(s3_path + "/", "", 1)
-                        s3_obj.download_file(bucket_name, weights_file_key,
-                                             "{}/{}".format(checkpoint_path, weights_file_filename))
+            latest_checkpoint = self.get_latest_checkpoint(checkpoint_path=checkpoint_path)
 
-                print "Downloaded latest checkpoint {} from S3 and restored to model".format(checkpoint_file)
+            latest_checkpoint_tar = latest_checkpoint+".tar"
 
-            except Exception as e:
-                print e
-                raise OSError("File with key: {} not found in bucket: {}".format(checkpoint_key, bucket_name))
+            s3_handler.download_file(os.path.join(s3_path,latest_checkpoint_tar),os.path.join(checkpoint_path,latest_checkpoint_tar))
+            checkpoint.untar(os.path.join(checkpoint_path,latest_checkpoint_tar),checkpoint_path)
+
+            # s3_obj = boto3.client('s3')
+            #
+            # try:
+            #     s3_obj.download_file(bucket_name, checkpoint_key, "{}/{}".format(checkpoint_path, 'checkpoint'))
+            #     checkpoint_file = open(checkpoint_path + 'checkpoint').read().split()[1].strip('"')
+            #     for weights_file in s3_obj.list_objects(Bucket=bucket_name)["Contents"]:
+            #         if s3_path + "/" + checkpoint_file in weights_file["Key"]:
+            #             weights_file_key = weights_file["Key"]
+            #             weights_file_filename = weights_file["Key"].replace(s3_path + "/", "", 1)
+            #             s3_obj.download_file(bucket_name, weights_file_key,
+            #                                  "{}/{}".format(checkpoint_path, weights_file_filename))
+            #
+            #     print "Downloaded latest checkpoint {} from S3 and restored to model".format(checkpoint_file)
+            #
+            # except Exception as e:
+            #     print e
+            #     raise OSError("File with key: {} not found in bucket: {}".format(checkpoint_key, bucket_name))
 
         if not os.path.exists(checkpoint_path):
             raise OSError("Checkpoint directory not found")
-        latest_checkpoint = self.get_latest_checkpoint(checkpoint_path)
+        latest_checkpoint = tf.train.latest_checkpoint(checkpoint_path)
         # print latest_checkpoint
         if latest_checkpoint:
-            saver = tf.train.Saver()
-            saver.restore(self.sess, latest_checkpoint)
+            if self.saver is None:
+                self.saver = tf.train.Saver()
+            self.saver.restore(self.sess, latest_checkpoint)
         else:
             raise OSError("Checkpoint file not found at " + checkpoint_path)
 
@@ -198,7 +228,8 @@ class Model:
         batch_end = min(batch_start + batch_size, len_data)
         return data[batch_start:batch_end]
 
-    def save_weights(self, checkpoint_path=None, checkpoint_number=None, s3=False, s3_path=None, run_id_prefix=""):
+    def save_weights(self, checkpoint_path=None, checkpoint_number=None, upload_to_s3=False,
+                     s3_path=None,s3_bucket_name = "preeminence-ml-models", weight_file_prefix=""):
         """
         Save the current weights of the model to disk at the checkpoint
         path.
@@ -228,38 +259,24 @@ class Model:
         if self.saver is None:
             self.saver = tf.train.Saver()
 
-        time_difference = datetime.timedelta(hours=5, minutes=30)
-        time_now = (datetime.datetime.now() + time_difference).strftime("%Y-%m-%d-%H-%M")
-        if run_id_prefix != "":
-            weight_file_prefix = "{}-{}-model_weights.ckpt".format(run_id_prefix, time_now)
-        else:
-            weight_file_prefix = "{}-model_weights.ckpt".format(time_now)
         save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix, global_step=checkpoint_number)
+        save_path = checkpoint.tar(save_path)
         print "Model saved at", save_path
-        if s3:
+        if upload_to_s3:
             start_time = time.time()
             if s3_path is None:
                 raise OSError("s3_path argument not provided.")
             else:
-                s3_obj = boto3.client('s3')
-                response = s3_obj.list_buckets()
-                bucket_name = "preeminence-ml-models"
 
-                # Get a list of all bucket names from the response
-                buckets = [bucket['Name'] for bucket in response['Buckets']]
+                checkpoint_tar_name = os.path.basename(save_path)
+                s3_tar_path = os.path.join(s3_path,checkpoint_tar_name)
 
-                if bucket_name in buckets:
-                    filename_prefix = weight_file_prefix + "-" + str(checkpoint_number)
-                    weight_files = [filename for filename in os.listdir(checkpoint_path) if filename_prefix in filename]
-                    s3_obj.upload_file(checkpoint_path + "checkpoint", bucket_name,
-                                       "{}/{}".format(s3_path, "checkpoint"))
-                    for weight_file in weight_files:
-                        # print "Uploading",weight_file
-                        s3_obj.upload_file(checkpoint_path + weight_file, bucket_name,
-                                           "{}/{}".format(s3_path, weight_file))
-                    print "Model uploaded to S3 at {}/{}/ in {} seconds".format(bucket_name, s3_path,
-                                                                                time.time() - start_time)
-                else:
-                    raise OSError(
-                        "Bucket not found. Check if bucket with name {} is present in your AWS account or change the bucket name.".format(
-                            bucket_name))
+
+                s3_handler = aws_utils.S3_handler(bucket_name=s3_bucket_name)
+                s3_handler.upload_file(save_path,s3_tar_path)
+                s3_handler.upload_file(os.path.join(checkpoint_path,"checkpoint"),os.path.join(s3_path,"checkpoint"))
+
+
+                print "Model uploaded to S3 at {}/{} in {} seconds".format(s3_bucket_name, s3_path,
+                                                                            time.time() - start_time)
+
