@@ -9,7 +9,7 @@ import time
 import datetime
 import os
 import boto3
-import inspect
+import checkpoint
 
 
 class Model:
@@ -63,7 +63,7 @@ class Model:
         self.sess = tf.Session()
         return self.sess
 
-    def sparse_tuples_from_sequences(self,sequences, dtype=np.int32):
+    def sparse_tuples_from_sequences(self, sequences, dtype=np.int32):
         """
         Create a sparse representations of inputs.
         :param sequences: a list of lists of type dtype where each element is a sequence
@@ -198,11 +198,11 @@ class Model:
         batch_end = min(batch_start + batch_size, len_data)
         return data[batch_start:batch_end]
 
-    def save_weights(self, checkpoint_path=None, checkpoint_number=None, s3=False, s3_path=None, run_id_prefix = ""):
+    def save_weights(self, checkpoint_path=None, checkpoint_number=None, s3=False, s3_path=None, run_id_prefix=""):
         """
         Save the current weights of the model to disk at the checkpoint
         path.
-        
+
         :param s3: Flag to decide to upload weights to S3 or not
         :param s3_path: Subfolder in S3 bucket
         :param checkpoint_path: Custom directory where checkpoints are saved
@@ -228,10 +228,10 @@ class Model:
         if self.saver is None:
             self.saver = tf.train.Saver()
 
-        time_difference = datetime.timedelta(hours=5,minutes=30)
-        time_now = (datetime.datetime.now()+time_difference).strftime ("%Y-%m-%d-%H-%M")
+        time_difference = datetime.timedelta(hours=5, minutes=30)
+        time_now = (datetime.datetime.now() + time_difference).strftime("%Y-%m-%d-%H-%M")
         if run_id_prefix != "":
-            weight_file_prefix = "{}-{}-model_weights.ckpt".format(run_id_prefix,time_now)
+            weight_file_prefix = "{}-{}-model_weights.ckpt".format(run_id_prefix, time_now)
         else:
             weight_file_prefix = "{}-model_weights.ckpt".format(time_now)
         save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix, global_step=checkpoint_number)
