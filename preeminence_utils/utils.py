@@ -1,4 +1,4 @@
-import tensorflow as tf
+import sys
 import tarfile
 import os
 
@@ -6,7 +6,7 @@ def save_weights():
     print "Called new save weights"
 
 
-def tar(save_path):
+def create_checkpoint_tar(save_path):
     checkpoint_suffixes = [".data-00000-of-00001", ".index", ".meta"]
 
     tar_path = save_path + ".tar"
@@ -22,4 +22,7 @@ def untar(tar_path,extract_path):
     with tarfile.open(tar_path) as tar_file:
         tar_file.extractall(path=extract_path)
 
+def rprint(string):
+    sys.stdout.write("\r{}".format(string))
+    sys.stdout.flush()
 

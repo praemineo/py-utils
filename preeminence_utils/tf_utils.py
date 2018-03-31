@@ -9,15 +9,16 @@ import time
 import aws_utils
 import os
 import boto3
-import checkpoint
+import utils
 
 
 class Model:
-    def __init__(self):
+    def __init__(self,name):
         self.graph = None
         self.sess = None
         self.writer = None
         self.saver = None
+        self.name = name
 
     def init(self):
         """
@@ -42,7 +43,7 @@ class Model:
         """
         return self.graph.get_operations()
 
-    def visualise(self, logdir="./logs"):
+    def visualise(self, logdir=None):
         """
         Save graph summary in the logidr to be
         visualised by tensorboard.
@@ -51,8 +52,13 @@ class Model:
         :param logdir: Destination for storing graph logs. ./logs by default
         :return: Nothing
         """
-        self.writer = tf.summary.FileWriter(logdir)
-        self.writer.add_graph(self.sess.graph)
+
+        if logdir is None:
+            logdir = "./logs/"+self.name
+
+        self.merged_summary_ops = tf.summary.merge_all()
+        self.summary_writer = tf.summary.FileWriter(logdir)
+        self.summary_writer.add_graph(tf.get_default_graph())
 
     def session(self):
         """
@@ -63,70 +69,7 @@ class Model:
         self.sess = tf.Session()
         return self.sess
 
-    def sparse_tuples_from_sequences(self, sequences, dtype=np.int32):
-        """
-        Create a sparse representations of inputs.
-        :param sequences: a list of lists of type dtype where each element is a sequence
-        :return: A tuple with (indices, values, shape)
-        """
-        indexes = []
-        values = []
 
-        for n, sequence in enumerate(sequences):
-            indexes.extend(zip([n] * len(sequence), range(len(sequence))))
-            values.extend(sequence)
-
-        indexes = np.asarray(indexes, dtype=np.int64)
-        values = np.asarray(values, dtype=dtype)
-        shape = np.asarray([len(sequences), np.asarray(indexes).max(0)[1] + 1], dtype=np.int64)
-
-        return indexes, values, shape
-
-    def train(self, ops, x, y, x_data, y_data, num_epochs=1, batch_size=1, y_as_sparse_tuples=False):
-        """
-        Training function. Executes the graph on a given dataset.
-
-        :param ops: Graph ops to be calculated and returned. Must be [optimiser_op,loss_op]
-        :param x: placeholder tensor for x
-        :param y: placeholder tensor for y
-        :param x_data: Training data to be fed into x
-        :param y_data: Training data to be fed into y
-        :param num_epochs: Number of epochs to be executed
-        :param batch_size: Size of a batch to be fed at a time
-        :param y_as_sparse_tuples: Flag to decide to convert y to sparse tuples or not
-        :return: Nothing
-        """
-
-        len_data = len(x_data)
-        # print y_len_data.dtype
-        with self.graph.as_default():
-            for epoch in range(1, num_epochs + 1):
-                epoch_start_time = time.time()
-                for batch_start in range(0, len_data, batch_size):
-                    if y_as_sparse_tuples:
-                        feed = {
-                            x: self.next_batch(x_data, batch_start, batch_size),
-                            y: self.sparse_tuples_from_sequences(self.next_batch(y_data, batch_start, batch_size))
-                        }
-                    else:
-                        feed = {
-                            x: self.next_batch(x_data, batch_start, batch_size),
-                            y: self.next_batch(y_data, batch_start, batch_size)
-                        }
-
-                    optimiser_value, loss_value = self.sess.run(ops, feed_dict=feed)
-
-                    sys.stdout.write(
-                        "\rEpoch: {}/{}, Batch: {}/{}, Training loss: {}".format(
-                            epoch,
-                            num_epochs,
-                            (batch_start / batch_size) + 1,
-                            len_data / batch_size,
-                            np.mean(loss_value)
-                        )
-                    )
-                    sys.stdout.flush()
-                print " Time: {} s".format(time.time() - epoch_start_time)
 
     def get_latest_checkpoint(self, checkpoint_path="./model_weights/"):
         """
@@ -158,7 +101,7 @@ class Model:
             print "checkpoint file that contains name of latest checkpoint not found"
             return None
 
-    def restore_weights(self, checkpoint_path="./model_weights/", download_from_s3=False, s3_path=None,
+    def restore_weights(self, checkpoint_path=None, download_from_s3=False, s3_path=None,
                         s3_bucket_name="preeminence-ml-models"):
         """
         Restore weights from the checkpoint path to the latest
@@ -169,6 +112,10 @@ class Model:
         :param checkpoint_path: Custom directory where checkpoints are saved
         :return:
         """
+
+        if checkpoint_path is None:
+            checkpoint_path = os.path.join("./model_weights/",self.name)
+
 
         if download_from_s3:
             if s3_path is None:
@@ -183,7 +130,7 @@ class Model:
             latest_checkpoint_tar = latest_checkpoint+".tar"
 
             s3_handler.download_file(os.path.join(s3_path,latest_checkpoint_tar),os.path.join(checkpoint_path,latest_checkpoint_tar))
-            checkpoint.untar(os.path.join(checkpoint_path,latest_checkpoint_tar),checkpoint_path)
+            utils.untar(os.path.join(checkpoint_path,latest_checkpoint_tar),checkpoint_path)
 
             # s3_obj = boto3.client('s3')
             #
@@ -243,7 +190,7 @@ class Model:
 
         if checkpoint_path is None:
             print "Checkpoint path not provided. Saving to ./model_weights/"
-            checkpoint_path = "./model_weights/"
+            checkpoint_path = os.path.join("./model_weights/",self.name)
         if not os.path.exists(checkpoint_path):
             print "Checkpoint path not found. Making directory.."
             os.makedirs(checkpoint_path)
@@ -259,8 +206,8 @@ class Model:
         if self.saver is None:
             self.saver = tf.train.Saver()
 
-        save_path = self.saver.save(self.sess, checkpoint_path + weight_file_prefix, global_step=checkpoint_number)
-        save_path = checkpoint.tar(save_path)
+        save_path = self.saver.save(self.sess, os.path.join(checkpoint_path,weight_file_prefix), global_step=checkpoint_number)
+        save_path = utils.create_checkpoint_tar(save_path)
         print "Model saved at", save_path
         if upload_to_s3:
             start_time = time.time()
@@ -269,12 +216,12 @@ class Model:
             else:
 
                 checkpoint_tar_name = os.path.basename(save_path)
-                s3_tar_path = os.path.join(s3_path,checkpoint_tar_name)
+                s3_tar_path = os.path.join(s3_path,self.name,checkpoint_tar_name)
 
 
                 s3_handler = aws_utils.S3_handler(bucket_name=s3_bucket_name)
                 s3_handler.upload_file(save_path,s3_tar_path)
-                s3_handler.upload_file(os.path.join(checkpoint_path,"checkpoint"),os.path.join(s3_path,"checkpoint"))
+                s3_handler.upload_file(os.path.join(checkpoint_path,"checkpoint"),os.path.join(s3_path,self.name,"checkpoint"))
 
 
                 print "Model uploaded to S3 at {}/{} in {} seconds".format(s3_bucket_name, s3_path,
