@@ -2,7 +2,7 @@
 from setuptools import setup,find_packages
 
 setup(name='preeminence_utils',
-      version='0.3',
+      version='0.4',
       description='Package for Internal usage in Preeminence.',
       url='https://github.com/preeminence/py-utils',
       author='Tushar Pawar',
