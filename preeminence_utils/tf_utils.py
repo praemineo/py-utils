@@ -45,9 +45,11 @@ class Model:
 
     def visualise(self, logdir=None):
         """
-        Save graph summary in the logidr to be
-        visualised by tensorboard.
-        Summaries for individual ops to be added.
+        Save graph summary in the logdir to be visualised by tensorboard.
+        Merge all summary ops into one. Summaries for individual ops to be added.
+        Use self.summary_writer to write summaries to disk. Call this function
+        just before starting training. This function adds default graph to the
+        summary to be viewed in tensorboard.
 
         :param logdir: Destination for storing graph logs. ./logs by default
         :return: Nothing
@@ -79,7 +81,7 @@ class Model:
         training from that point.
 
         :param checkpoint_path: Custom directory where checkpoints are saved
-        :return:
+        :return: Path of latest checkpoint
         """
 
         checkpoint_filename = os.path.join(checkpoint_path, "checkpoint")
@@ -105,14 +107,15 @@ class Model:
                         s3_bucket_name="preeminence-ml-models"):
         """
         Restore weights from the checkpoint path to the latest
-        checkpoint to resume training from that point.
+        checkpoint to resume training from that point. If download_from_s3
+        flag is set, Download the tar file for the latest checkpoint.
 
-        :param download_from_s3: Flag to decide to download checkpoints from S3 or not
-        :param s3_path: Name of subfolder in preeminence-models bucket
-        :param checkpoint_path: Custom directory where checkpoints are saved
-        :return:
+        :param checkpoint_path: Path to store downloaded checkpoint and restore weights
+        :param download_from_s3: Flag to decide to download checkpoint from s3 or not
+        :param s3_path: Path to s3 folder
+        :param s3_bucket_name: Name of bucket on s3
+        :return: Nothing
         """
-
         if checkpoint_path is None:
             checkpoint_path = os.path.join("./model_weights/",self.name)
 
@@ -131,24 +134,6 @@ class Model:
 
             s3_handler.download_file(os.path.join(s3_path,latest_checkpoint_tar),os.path.join(checkpoint_path,latest_checkpoint_tar))
             utils.untar(os.path.join(checkpoint_path,latest_checkpoint_tar),checkpoint_path)
-
-            # s3_obj = boto3.client('s3')
-            #
-            # try:
-            #     s3_obj.download_file(bucket_name, checkpoint_key, "{}/{}".format(checkpoint_path, 'checkpoint'))
-            #     checkpoint_file = open(checkpoint_path + 'checkpoint').read().split()[1].strip('"')
-            #     for weights_file in s3_obj.list_objects(Bucket=bucket_name)["Contents"]:
-            #         if s3_path + "/" + checkpoint_file in weights_file["Key"]:
-            #             weights_file_key = weights_file["Key"]
-            #             weights_file_filename = weights_file["Key"].replace(s3_path + "/", "", 1)
-            #             s3_obj.download_file(bucket_name, weights_file_key,
-            #                                  "{}/{}".format(checkpoint_path, weights_file_filename))
-            #
-            #     print "Downloaded latest checkpoint {} from S3 and restored to model".format(checkpoint_file)
-            #
-            # except Exception as e:
-            #     print e
-            #     raise OSError("File with key: {} not found in bucket: {}".format(checkpoint_key, bucket_name))
 
         if not os.path.exists(checkpoint_path):
             raise OSError("Checkpoint directory not found")
@@ -178,14 +163,16 @@ class Model:
     def save_weights(self, checkpoint_path=None, checkpoint_number=None, upload_to_s3=False,
                      s3_path=None,s3_bucket_name = "preeminence-ml-models", weight_file_prefix=""):
         """
-        Save the current weights of the model to disk at the checkpoint
-        path.
+        Save the weights in current graph to disk in form of
+        tar archive. Optionally upload the checkpoint tar to s3
 
-        :param s3: Flag to decide to upload weights to S3 or not
-        :param s3_path: Subfolder in S3 bucket
-        :param checkpoint_path: Custom directory where checkpoints are saved
-        :param checkpoint_number: Custom number to append at the end of checkpoint
-        :return:
+        :param checkpoint_path: Local directory to save checkpoints
+        :param checkpoint_number: Number to append to checkpoint
+        :param upload_to_s3: Flag to decide to upload checkpoint to s3
+        :param s3_path: S3 path to upload checkpoint
+        :param s3_bucket_name: S3 bucket name
+        :param weight_file_prefix: Optional prefic to weights file
+        :return: Nothing
         """
 
         if checkpoint_path is None:
