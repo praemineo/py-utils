@@ -6,10 +6,10 @@ import tensorflow as tf
 import sys
 import numpy as np
 import time
-import aws_utils
+from . import aws_utils
 import os
 import boto3
-import utils
+from . import utils
 
 
 class Model:
@@ -97,10 +97,10 @@ class Model:
             if os.path.exists(os.path.join(checkpoint_path,latest_checkpoint+".tar")):
                 return latest_checkpoint
             else:
-                print "tar file for latest checkpoint {} not found in {}".format(latest_checkpoint,checkpoint_path)
+                print("tar file for latest checkpoint {} not found in {}".format(latest_checkpoint,checkpoint_path))
                 return latest_checkpoint
         else:
-            print "checkpoint file that contains name of latest checkpoint not found"
+            print("checkpoint file that contains name of latest checkpoint not found")
             return None
 
     def restore_weights(self, checkpoint_path=None, download_from_s3=False, s3_path=None,
@@ -176,10 +176,10 @@ class Model:
         """
 
         if checkpoint_path is None:
-            print "Checkpoint path not provided. Saving to ./model_weights/"
+            print("Checkpoint path not provided. Saving to ./model_weights/")
             checkpoint_path = os.path.join("./model_weights/",self.name)
         if not os.path.exists(checkpoint_path):
-            print "Checkpoint path not found. Making directory.."
+            print("Checkpoint path not found. Making directory..")
             os.makedirs(checkpoint_path)
 
         if checkpoint_number is None:
@@ -195,7 +195,7 @@ class Model:
 
         save_path = self.saver.save(self.sess, os.path.join(checkpoint_path,weight_file_prefix), global_step=checkpoint_number)
         save_path = utils.create_checkpoint_tar(save_path)
-        print "Model saved at", save_path
+        print("Model saved at", save_path)
         if upload_to_s3:
             start_time = time.time()
             if s3_path is None:
@@ -211,6 +211,6 @@ class Model:
                 s3_handler.upload_file(os.path.join(checkpoint_path,"checkpoint"),os.path.join(s3_path,self.name,"checkpoint"))
 
 
-                print "Model uploaded to S3 at {}/{} in {} seconds".format(s3_bucket_name, s3_path,
-                                                                            time.time() - start_time)
+                print("Model uploaded to S3 at {}/{} in {} seconds".format(s3_bucket_name, s3_path,
+                                                                            time.time() - start_time))
 
